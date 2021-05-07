@@ -1,14 +1,18 @@
 package com.vaneks.restapi.model;
 
-import lombok.Data;
+import com.google.gson.annotations.Expose;
+import lombok.*;
 import javax.persistence.*;
 
 @Entity
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Table
 public class Account {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private long id;
 
@@ -26,5 +30,13 @@ public class Account {
     private AccountStatus accountStatus;
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "account")
+    @Expose
     private User user;
+
+    public Account(String firstName, String lastName, int age, AccountStatus accountStatus) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.age = age;
+        this.accountStatus = accountStatus;
+    }
 }

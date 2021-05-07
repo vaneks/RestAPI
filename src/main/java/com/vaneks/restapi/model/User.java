@@ -1,10 +1,15 @@
 package com.vaneks.restapi.model;
 
-import lombok.Data;
+import com.google.gson.annotations.Expose;
+import lombok.*;
+
 import javax.persistence.*;
 import java.util.Set;
 
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table
 public class User {
@@ -24,5 +29,6 @@ public class User {
     private Set<File> files;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @Expose
     private Set<Event> events;
 }

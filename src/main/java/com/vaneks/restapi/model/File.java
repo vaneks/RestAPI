@@ -1,11 +1,15 @@
 package com.vaneks.restapi.model;
 
-import lombok.Data;
+import lombok.*;
+
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 @Table
 public class File {
     @Id
