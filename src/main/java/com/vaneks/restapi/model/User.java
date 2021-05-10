@@ -21,7 +21,7 @@ public class User {
     @Column(name = "login")
     private String login;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
     @JoinColumn(name = "account_id")
     private Account account;
 
@@ -29,6 +29,5 @@ public class User {
     private Set<File> files;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    @Expose
     private Set<Event> events;
 }

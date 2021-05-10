@@ -29,7 +29,7 @@ public class Account {
     @Column(name = "accountStatus")
     private AccountStatus accountStatus;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "account")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "account", cascade=CascadeType.ALL)
     @Expose
     private User user;
 
