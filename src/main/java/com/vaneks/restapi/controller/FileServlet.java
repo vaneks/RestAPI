@@ -8,7 +8,6 @@ import com.vaneks.restapi.dao.FileDaoImpl;
 import com.vaneks.restapi.model.File;
 import com.vaneks.restapi.model.FileStatus;
 import com.vaneks.restapi.model.User;
-import lombok.SneakyThrows;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -18,6 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -53,27 +53,40 @@ public class FileServlet extends HttpServlet {
         response.getWriter().write("Deleted");
     }
 
-    @SneakyThrows
     @Override
-//    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-//        String fileName = request.getParameter("fileName");
-//        Date date = new Date();
-//        UserDaoImpl userDao =  new UserDaoImpl(User.class.getSimpleName(), User.class);
-//        User user = userDao.getById(1);
-//        fileDao.save(new File(fileName, date, FileStatus.ACTIVE, user));
-//        response.getWriter().write("Added");
-//    }
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String filePath  = "C:\\uploads";
+
+        final int fileMaxSize = 100 * 1024;
+        final int memMaxSize = 100 * 1024;
+
+        String filePath = "D:/upload";
         java.io.File file;
+        response.setContentType("text/html");
+
+        String docType = "<!DOCTYPE html>";
+        String title = "File Uploading";
+
+        PrintWriter writer = response.getWriter();
+
         DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
         diskFileItemFactory.setRepository(new java.io.File(filePath));
+        diskFileItemFactory.setSizeThreshold(memMaxSize);
+
         ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
+        upload.setSizeMax(fileMaxSize);
 
         try {
             List fileItems = upload.parseRequest(request);
+
             Iterator iterator = fileItems.iterator();
+
+            writer.println(docType +
+                    "<html>" +
+                    "<head>" +
+                    "<title>" + title + "</title>" +
+                    "</head>" +
+                    "<body>");
 
             while (iterator.hasNext()) {
                 FileItem fileItem = (FileItem) iterator.next();
@@ -88,8 +101,11 @@ public class FileServlet extends HttpServlet {
                                 fileName.substring(fileName.lastIndexOf("\\") + 1));
                     }
                     fileItem.write(file);
+                    writer.println(fileName + " is uploaded.<br>");
                 }
             }
+            writer.println("</body>" +
+                    "</html>");
         } catch (Exception e) {
             e.printStackTrace();
         }
