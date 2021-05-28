@@ -1,7 +1,6 @@
 package com.vaneks.restapi.dao;
 
 import org.hibernate.Session;
-import org.hibernate.query.Query;
 import utils.HibernateSession;
 
 import java.util.List;

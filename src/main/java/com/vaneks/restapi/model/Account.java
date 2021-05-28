@@ -30,7 +30,7 @@ public class Account {
     private AccountStatus accountStatus;
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "account", cascade=CascadeType.ALL)
-    @Expose
+    @Expose(serialize = false)
     private User user;
 
     public Account(String firstName, String lastName, int age, AccountStatus accountStatus) {

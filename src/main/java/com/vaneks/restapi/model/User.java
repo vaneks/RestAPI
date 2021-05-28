@@ -21,12 +21,12 @@ public class User {
     @Column(name = "login")
     private String login;
 
+    @Column(name = "password")
+    private String password;
+
     @OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
     @JoinColumn(name = "account_id")
     private Account account;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    private Set<File> files;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     private Set<Event> events;

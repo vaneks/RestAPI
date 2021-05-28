@@ -53,7 +53,7 @@ public class AccountServlet extends HttpServlet {
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         int age = Integer.parseInt(request.getParameter("age"));
-        accountDao.save(new Account( firstName, lastName, age, AccountStatus.ACTIVE));
+        accountDao.save(new Account(firstName, lastName, age, AccountStatus.ACTIVE));
         response.getWriter().write("Added");
     }
 

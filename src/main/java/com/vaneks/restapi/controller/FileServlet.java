@@ -4,14 +4,21 @@ import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.vaneks.restapi.dao.EventDaoImpl;
 import com.vaneks.restapi.dao.FileDaoImpl;
+import com.vaneks.restapi.dao.UserDaoImpl;
+import com.vaneks.restapi.model.Event;
 import com.vaneks.restapi.model.File;
 import com.vaneks.restapi.model.FileStatus;
 import com.vaneks.restapi.model.User;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import utils.HibernateSession;
+
 import javax.servlet.ServletException;
+import javax.servlet.annotation.HttpMethodConstraint;
+import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -21,18 +28,24 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 @WebServlet(name = "FileServlet", urlPatterns = {"/files/*"})
+
 public class FileServlet extends HttpServlet {
     private FileDaoImpl fileDao;
-
+    private EventDaoImpl eventDao;
+    private UserDaoImpl userDao;
+    static String filePath = "D:/upload/";
     @Override
     public void init() {
         fileDao = new FileDaoImpl(File.class.getSimpleName(), File.class);
+        eventDao = new EventDaoImpl(Event.class.getSimpleName(), Event.class);
+        userDao = new UserDaoImpl(User.class.getSimpleName(), User.class);
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws  IOException {
         String pathInfo = request.getPathInfo();
         if(pathInfo == null || pathInfo.equals("/")) {
             List<File> listAccount = fileDao.getAll();
@@ -45,22 +58,31 @@ public class FileServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws  IOException {
         String pathInfo = request.getPathInfo();
         String[] splits = pathInfo.split("/");
         String id = splits[1];
+        String fileName = fileDao.getById(Long.parseLong(id)).getFileName();
         fileDao.deleteById(Long.parseLong(id));
+        String path = getServletContext().getRealPath(filePath + fileName);
+        java.io.File deleteFile = new java.io.File(path);
+        if( deleteFile.exists() )
+            deleteFile.delete() ;
         response.getWriter().write("Deleted");
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws IOException {
 
         final int fileMaxSize = 100 * 1024;
         final int memMaxSize = 100 * 1024;
 
-        String filePath = "D:/upload";
+        Date date = new Date();
+        User user = userDao.getById(1L);
+
+        String uuidFile = UUID.randomUUID().toString();
+
         java.io.File file;
         response.setContentType("text/html");
 
@@ -92,7 +114,7 @@ public class FileServlet extends HttpServlet {
                 FileItem fileItem = (FileItem) iterator.next();
                 if (!fileItem.isFormField()) {
 
-                    String fileName = fileItem.getName();
+                    String fileName = uuidFile + "_" + fileItem.getName();
                     if (fileName.lastIndexOf("\\") >= 0) {
                         file = new java.io.File(filePath +
                                 fileName.substring(fileName.lastIndexOf("\\")));
@@ -100,7 +122,12 @@ public class FileServlet extends HttpServlet {
                         file = new java.io.File(filePath +
                                 fileName.substring(fileName.lastIndexOf("\\") + 1));
                     }
+
                     fileItem.write(file);
+                    File fileSave = new File(fileName, date, FileStatus.ACTIVE);
+                    fileDao.save(fileSave);
+
+                    eventDao.save(new Event(fileSave, date, user));
                     writer.println(fileName + " is uploaded.<br>");
                 }
             }
@@ -113,13 +140,14 @@ public class FileServlet extends HttpServlet {
 
 
     @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String id = request.getParameter("id");
         String fileName = request.getParameter("fileName");
         String fileStatusString = request.getParameter("fileStatus");
         FileStatus fileStatus = FileStatus.valueOf(fileStatusString);
         Date date = new Date();;
         File file= fileDao.getById(Long.parseLong(id));
+
         file.setFileName(fileName);
         file.setDate(date);
         file.setFileStatus(fileStatus);
@@ -130,10 +158,10 @@ public class FileServlet extends HttpServlet {
         ExclusionStrategy strategy = new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes field) {
-                if (field.getDeclaringClass() == File.class && field.getName().equals("user")) {
+                if (field.getDeclaringClass() == File.class && field.getName().equals("events")) {
                     return true;
                 }
-                if (field.getDeclaringClass() == User.class && field.getName().equals("files")) {
+                if (field.getDeclaringClass() == Event.class && field.getName().equals("file")) {
                     return true;
                 }
                 return false;

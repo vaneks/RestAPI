@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 import lombok.*;
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Set;
 
 @Entity
 @NoArgsConstructor
@@ -24,16 +25,13 @@ public class File {
     @Enumerated(EnumType.STRING)
     private FileStatus fileStatus;
 
-    @ManyToOne(optional = false, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id")
-    @Expose
-    private User user;
+    @OneToMany(mappedBy = "file", fetch = FetchType.EAGER)
+    @Expose(serialize = false)
+    private Set<Event> events;
 
-    public File(String fileName, Date date, FileStatus fileStatus, User user) {
+    public File(String fileName, Date date, FileStatus fileStatus) {
         this.fileName = fileName;
         this.date = date;
         this.fileStatus = fileStatus;
-        this.user = user;
     }
-
 }
