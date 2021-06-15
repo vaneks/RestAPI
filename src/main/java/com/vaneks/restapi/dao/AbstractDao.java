@@ -25,7 +25,6 @@ public class AbstractDao<T> implements EntityInterface<T>{
 
     @Override
     public T getById(long id) {
-        Session session = HibernateSession.getSession();
         session.beginTransaction();
         T entity = session.get(tClass, id);
         session.getTransaction().commit();
@@ -35,7 +34,6 @@ public class AbstractDao<T> implements EntityInterface<T>{
 
     @Override
     public void save(T entity) {
-        Session session = HibernateSession.getSession();
         session.beginTransaction();
         session.save(entity);
         session.getTransaction().commit();
@@ -43,7 +41,6 @@ public class AbstractDao<T> implements EntityInterface<T>{
 
     @Override
     public void update(T entity) {
-        Session session = HibernateSession.getSession();
         session.beginTransaction();
         session.update(entity);
         session.getTransaction().commit();
@@ -51,7 +48,6 @@ public class AbstractDao<T> implements EntityInterface<T>{
 
     @Override
     public void deleteById(long id) {
-        Session session = HibernateSession.getSession();
         session.beginTransaction();
         T entity = session.get(tClass, id);
         session.delete(entity);

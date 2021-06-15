@@ -59,10 +59,14 @@ public class AccountServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String id = request.getParameter("id");
+        String pathInfo = request.getPathInfo();
+        String[] splits = pathInfo.split("/");
+        String id = splits[1];
+
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         String age = request.getParameter("age");
+
         Account account = accountDao.getById(Long.parseLong(id));
         account.setFirstName(firstName);
         account.setLastName(lastName);

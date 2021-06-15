@@ -33,6 +33,7 @@ import java.util.UUID;
 @WebServlet(name = "FileServlet", urlPatterns = {"/files/*"})
 
 public class FileServlet extends HttpServlet {
+
     private FileDaoImpl fileDao;
     private EventDaoImpl eventDao;
     private UserDaoImpl userDao;
@@ -64,7 +65,7 @@ public class FileServlet extends HttpServlet {
         String id = splits[1];
         String fileName = fileDao.getById(Long.parseLong(id)).getFileName();
         fileDao.deleteById(Long.parseLong(id));
-        String path = getServletContext().getRealPath(filePath + fileName);
+        String path = filePath + fileName;
         java.io.File deleteFile = new java.io.File(path);
         if( deleteFile.exists() )
             deleteFile.delete() ;
@@ -126,7 +127,6 @@ public class FileServlet extends HttpServlet {
                     fileItem.write(file);
                     File fileSave = new File(fileName, date, FileStatus.ACTIVE);
                     fileDao.save(fileSave);
-
                     eventDao.save(new Event(fileSave, date, user));
                     writer.println(fileName + " is uploaded.<br>");
                 }
@@ -141,29 +141,35 @@ public class FileServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
         String id = request.getParameter("id");
         String fileName = request.getParameter("fileName");
         String fileStatusString = request.getParameter("fileStatus");
+
         FileStatus fileStatus = FileStatus.valueOf(fileStatusString);
-        Date date = new Date();;
+        Date date = new Date();
         File file= fileDao.getById(Long.parseLong(id));
+        String name = file.getFileName();
 
         file.setFileName(fileName);
         file.setDate(date);
         file.setFileStatus(fileStatus);
-        response.getWriter().write("Updated");
+
+        java.io.File oldFileName=  new java.io.File(filePath + name);
+        java.io.File newFileName = new java.io.File(filePath + fileName);
+        System.out.println(filePath + name);
+        System.out.println(filePath + fileName);
+        if(oldFileName.renameTo(newFileName)){
+            fileDao.update(file);
+            response.getWriter().write("Updated");
+        }
+
     }
 
     private void sendJson(HttpServletResponse response, Object obj) throws IOException {
         ExclusionStrategy strategy = new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes field) {
-                if (field.getDeclaringClass() == File.class && field.getName().equals("events")) {
-                    return true;
-                }
-                if (field.getDeclaringClass() == Event.class && field.getName().equals("file")) {
-                    return true;
-                }
                 return false;
             }
 

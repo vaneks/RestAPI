@@ -17,17 +17,16 @@ public class File {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @Column
     private String fileName;
 
+    @Column
     private Date date;
 
     @Column
     @Enumerated(EnumType.STRING)
     private FileStatus fileStatus;
 
-    @OneToMany(mappedBy = "file", fetch = FetchType.EAGER)
-    @Expose(serialize = false)
-    private Set<Event> events;
 
     public File(String fileName, Date date, FileStatus fileStatus) {
         this.fileName = fileName;

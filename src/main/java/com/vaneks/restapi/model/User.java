@@ -28,6 +28,11 @@ public class User {
     @JoinColumn(name = "account_id")
     private Account account;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
-    private Set<Event> events;
+    @OneToMany(fetch = FetchType.LAZY,mappedBy = "user")
+    private Set<Event> event;
+
+    public User(String login, String password) {
+        this.login = login;
+        this.password = password;
+    }
 }
