@@ -69,12 +69,11 @@ public class FileServlet extends HttpServlet {
         java.io.File deleteFile = new java.io.File(path);
         if( deleteFile.exists() )
             deleteFile.delete() ;
-        response.getWriter().write("Deleted");
+        sendJson(response, "Deleted");
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) {
 
         final int fileMaxSize = 100 * 1024;
         final int memMaxSize = 100 * 1024;
@@ -85,12 +84,7 @@ public class FileServlet extends HttpServlet {
         String uuidFile = UUID.randomUUID().toString();
 
         java.io.File file;
-        response.setContentType("text/html");
 
-        String docType = "<!DOCTYPE html>";
-        String title = "File Uploading";
-
-        PrintWriter writer = response.getWriter();
 
         DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
         diskFileItemFactory.setRepository(new java.io.File(filePath));
@@ -103,13 +97,6 @@ public class FileServlet extends HttpServlet {
             List fileItems = upload.parseRequest(request);
 
             Iterator iterator = fileItems.iterator();
-
-            writer.println(docType +
-                    "<html>" +
-                    "<head>" +
-                    "<title>" + title + "</title>" +
-                    "</head>" +
-                    "<body>");
 
             while (iterator.hasNext()) {
                 FileItem fileItem = (FileItem) iterator.next();
@@ -128,11 +115,9 @@ public class FileServlet extends HttpServlet {
                     File fileSave = new File(fileName, date, FileStatus.ACTIVE);
                     fileDao.save(fileSave);
                     eventDao.save(new Event(fileSave, date, user));
-                    writer.println(fileName + " is uploaded.<br>");
+                    sendJson(response, fileName + " is uploaded");
                 }
             }
-            writer.println("</body>" +
-                    "</html>");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -157,11 +142,9 @@ public class FileServlet extends HttpServlet {
 
         java.io.File oldFileName=  new java.io.File(filePath + name);
         java.io.File newFileName = new java.io.File(filePath + fileName);
-        System.out.println(filePath + name);
-        System.out.println(filePath + fileName);
         if(oldFileName.renameTo(newFileName)){
             fileDao.update(file);
-            response.getWriter().write("Updated");
+            sendJson(response, "Updated");
         }
 
     }

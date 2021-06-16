@@ -45,7 +45,7 @@ public class AccountServlet extends HttpServlet {
         String[] splits = pathInfo.split("/");
         String id = splits[1];
         accountDao.deleteById(Long.parseLong(id));
-        response.getWriter().write("Deleted");
+        sendJson(response, "Deleted");
     }
 
     @Override
@@ -54,7 +54,7 @@ public class AccountServlet extends HttpServlet {
         String lastName = request.getParameter("lastName");
         int age = Integer.parseInt(request.getParameter("age"));
         accountDao.save(new Account(firstName, lastName, age, AccountStatus.ACTIVE));
-        response.getWriter().write("Added");
+        sendJson(response, "Added");
     }
 
     @Override
@@ -72,7 +72,7 @@ public class AccountServlet extends HttpServlet {
         account.setLastName(lastName);
         account.setAge(Integer.parseInt(age));
         accountDao.update(account);
-        response.getWriter().write("Updated");
+        sendJson(response, "Updated");
     }
 
     private void sendJson(HttpServletResponse response, Object obj) throws IOException {
