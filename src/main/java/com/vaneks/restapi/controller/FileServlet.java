@@ -23,6 +23,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
@@ -79,12 +80,12 @@ public class FileServlet extends HttpServlet {
         final int memMaxSize = 100 * 1024;
 
         Date date = new Date();
-        User user = userDao.getById(1L);
+        HttpServletRequest req = (HttpServletRequest) request;
+        User user = (User) req.getSession().getAttribute("user");
 
         String uuidFile = UUID.randomUUID().toString();
 
         java.io.File file;
-
 
         DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
         diskFileItemFactory.setRepository(new java.io.File(filePath));
