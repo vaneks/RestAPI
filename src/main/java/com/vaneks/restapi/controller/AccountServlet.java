@@ -8,7 +8,6 @@ import com.vaneks.restapi.dao.AccountDaoImpl;
 import com.vaneks.restapi.model.Account;
 import com.vaneks.restapi.model.AccountStatus;
 import com.vaneks.restapi.model.User;
-import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,7 +25,7 @@ public class AccountServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws  IOException {
         String pathInfo = request.getPathInfo();
         if(pathInfo == null || pathInfo.equals("/")) {
             List<Account> listAccount = accountDao.getAll();
@@ -40,7 +39,7 @@ public class AccountServlet extends HttpServlet {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String pathInfo = request.getPathInfo();
         String[] splits = pathInfo.split("/");
         String id = splits[1];
@@ -49,7 +48,7 @@ public class AccountServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws  IOException {
         String firstName = request.getParameter("firstName");
         String lastName = request.getParameter("lastName");
         int age = Integer.parseInt(request.getParameter("age"));
@@ -58,7 +57,7 @@ public class AccountServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws  IOException {
         String pathInfo = request.getPathInfo();
         String[] splits = pathInfo.split("/");
         String id = splits[1];
@@ -79,13 +78,8 @@ public class AccountServlet extends HttpServlet {
         ExclusionStrategy strategy = new ExclusionStrategy() {
             @Override
             public boolean shouldSkipField(FieldAttributes field) {
-                if (field.getDeclaringClass() == Account.class && field.getName().equals("user")) {
-                    return true;
-                }
-                if (field.getDeclaringClass() == User.class && field.getName().equals("account")) {
-                    return true;
-                }
-                return false;
+                return (field.getDeclaringClass() == Account.class && field.getName().equals("user"))||
+                        (field.getDeclaringClass() == User.class && field.getName().equals("account"));
             }
 
             @Override
@@ -93,9 +87,8 @@ public class AccountServlet extends HttpServlet {
                 return false;
             }
         };
-        Gson gson = new GsonBuilder()
-                .addSerializationExclusionStrategy(strategy)
-                .create();
+
+        Gson gson = new GsonBuilder().addSerializationExclusionStrategy(strategy).create();
         String json = gson.toJson(obj);
         response.getWriter().write(json);
     }
