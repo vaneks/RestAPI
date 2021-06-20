@@ -17,11 +17,11 @@
         </property>
 
         <property name="hibernate.connection.username">
-          root
+         
         </property>
 
         <property name="hibernate.connection.password">
-            22272627q!
+         
         </property>
 
         <mapping class="com.vaneks.restapi.model.Account"/>
