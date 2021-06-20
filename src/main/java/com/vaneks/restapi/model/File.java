@@ -1,7 +1,11 @@
 package com.vaneks.restapi.model;
 
 import com.google.gson.annotations.Expose;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
@@ -15,6 +19,7 @@ import java.util.Set;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @PrimaryKeyJoinColumn
     private long id;
 
     @Column
@@ -27,6 +32,9 @@ public class File {
     @Enumerated(EnumType.STRING)
     private FileStatus fileStatus;
 
+    @OneToMany
+    @Expose(serialize = false)
+    private Set<Event> event;
 
     public File(String fileName, Date date, FileStatus fileStatus) {
         this.fileName = fileName;

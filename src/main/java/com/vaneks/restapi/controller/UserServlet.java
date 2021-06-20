@@ -1,10 +1,10 @@
 package com.vaneks.restapi.controller;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.vaneks.restapi.dao.AccountDaoImpl;
 import com.vaneks.restapi.dao.UserDaoImpl;
+import com.vaneks.restapi.model.Account;
 import com.vaneks.restapi.model.User;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -14,13 +14,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "UserServlet", urlPatterns = {"/user/*"})
+@WebServlet(name = "UserServlet", urlPatterns = {"/users/*"})
 public class UserServlet extends HttpServlet {
     private UserDaoImpl userDao;
+    private AccountDaoImpl accountDao;
 
     @Override
     public void init() {
         userDao = new UserDaoImpl(User.class.getSimpleName(), User.class);
+        accountDao = new AccountDaoImpl(Account.class.getSimpleName(), Account.class);
     }
 
     @Override
@@ -52,8 +54,9 @@ public class UserServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String login = request.getParameter("login");
         String password = request.getParameter("password");
-
-        userDao.save(new User(login, password));
+        long account_id = Long.parseLong(request.getParameter("account_id"));
+        Account account = accountDao.getById(account_id);
+        userDao.save(new User(login, password, account));
         response.getWriter().write("Added");
     }
 
@@ -72,20 +75,7 @@ public class UserServlet extends HttpServlet {
     }
 
     private void sendJson(HttpServletResponse response, Object obj) throws IOException {
-        ExclusionStrategy strategy = new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes field) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        };
-        Gson gson = new GsonBuilder()
-                .addSerializationExclusionStrategy(strategy)
-                .create();
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         String json = gson.toJson(obj);
         response.getWriter().write(json);
     }

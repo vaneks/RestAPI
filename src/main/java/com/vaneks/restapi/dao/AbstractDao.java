@@ -1,7 +1,7 @@
 package com.vaneks.restapi.dao;
 
 import org.hibernate.Session;
-import utils.HibernateSession;
+import com.vaneks.restapi.utils.HibernateSession;
 
 import java.util.List;
 

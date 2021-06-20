@@ -1,31 +1,19 @@
 package com.vaneks.restapi.controller;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.vaneks.restapi.dao.EventDaoImpl;
 import com.vaneks.restapi.dao.FileDaoImpl;
 import com.vaneks.restapi.dao.UserDaoImpl;
-import com.vaneks.restapi.model.Event;
-import com.vaneks.restapi.model.File;
-import com.vaneks.restapi.model.FileStatus;
-import com.vaneks.restapi.model.User;
+import com.vaneks.restapi.model.*;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import utils.HibernateSession;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HttpMethodConstraint;
-import javax.servlet.annotation.ServletSecurity;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -61,15 +49,21 @@ public class FileServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws  IOException {
+        Date date = new Date();
+        HttpServletRequest req = (HttpServletRequest) request;
+        User user = (User) req.getSession().getAttribute("user");
         String pathInfo = request.getPathInfo();
         String[] splits = pathInfo.split("/");
         String id = splits[1];
         String fileName = fileDao.getById(Long.parseLong(id)).getFileName();
-        fileDao.deleteById(Long.parseLong(id));
+        File file = fileDao.getById(Long.parseLong(id));
         String path = filePath + fileName;
         java.io.File deleteFile = new java.io.File(path);
-        if( deleteFile.exists() )
-            deleteFile.delete() ;
+        if (deleteFile.exists()) {
+            deleteFile.delete();
+            fileDao.deleteById(Long.parseLong(id));
+            eventDao.save(new Event(file, date, user, EventAction.DELETED));
+        }
         sendJson(response, "Deleted");
     }
 
@@ -115,7 +109,7 @@ public class FileServlet extends HttpServlet {
                     fileItem.write(file);
                     File fileSave = new File(fileName, date, FileStatus.ACTIVE);
                     fileDao.save(fileSave);
-                    eventDao.save(new Event(fileSave, date, user));
+                    eventDao.save(new Event(fileSave, date, user,EventAction.ADDED));
                     sendJson(response, fileName + " is uploaded");
                 }
             }
@@ -124,13 +118,15 @@ public class FileServlet extends HttpServlet {
         }
     }
 
-
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        String id = request.getParameter("id");
+        String pathInfo = request.getPathInfo();
+        String[] splits = pathInfo.split("/");
+        String id = splits[1];
         String fileName = request.getParameter("fileName");
         String fileStatusString = request.getParameter("fileStatus");
+        HttpServletRequest req = (HttpServletRequest) request;
+        User user = (User) req.getSession().getAttribute("user");
 
         FileStatus fileStatus = FileStatus.valueOf(fileStatusString);
         Date date = new Date();
@@ -145,26 +141,14 @@ public class FileServlet extends HttpServlet {
         java.io.File newFileName = new java.io.File(filePath + fileName);
         if(oldFileName.renameTo(newFileName)){
             fileDao.update(file);
+            eventDao.save(new Event(file, date, user,EventAction.UPDATED));
             sendJson(response, "Updated");
         }
 
     }
 
     private void sendJson(HttpServletResponse response, Object obj) throws IOException {
-        ExclusionStrategy strategy = new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes field) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        };
-        Gson gson = new GsonBuilder()
-                .addSerializationExclusionStrategy(strategy)
-                .create();
+        Gson gson = new GsonBuilder().create();
         String json = gson.toJson(obj);
         response.getWriter().write(json);
     }

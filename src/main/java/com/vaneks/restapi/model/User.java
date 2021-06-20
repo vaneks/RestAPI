@@ -1,7 +1,10 @@
 package com.vaneks.restapi.model;
 
 import com.google.gson.annotations.Expose;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -14,25 +17,30 @@ import java.util.Set;
 @Table
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @PrimaryKeyJoinColumn
+    @Expose
     private long id;
 
-    @Column(name = "login")
+    @Expose
     private String login;
 
-    @Column(name = "password")
+    @Expose
     private String password;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade=CascadeType.ALL)
+    @Expose
+    @OneToOne(cascade=CascadeType.ALL)
     @JoinColumn(name = "account_id")
     private Account account;
 
     @OneToMany(fetch = FetchType.LAZY,mappedBy = "user")
+    @Expose(serialize = false)
     private Set<Event> event;
 
-    public User(String login, String password) {
+    public User(String login, String password, Account account) {
         this.login = login;
         this.password = password;
+        this.account = account;
     }
 }

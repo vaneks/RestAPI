@@ -1,8 +1,13 @@
 package com.vaneks.restapi.model;
 
 import com.google.gson.annotations.Expose;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
+
 
 @Entity
 @NoArgsConstructor
@@ -13,23 +18,24 @@ import javax.persistence.*;
 public class Account {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @PrimaryKeyJoinColumn
+    @Expose
     private long id;
 
-    @Column(name = "firstName")
+    @Expose
     private String firstName;
 
-    @Column(name = "lastName")
+    @Expose
     private String lastName;
 
-    @Column(name = "age")
-    private int age;
+    @Expose
+    private long age;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "accountStatus")
+    @Expose
     private AccountStatus accountStatus;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "account", cascade=CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY,mappedBy = "account", cascade=CascadeType.ALL)
     @Expose(serialize = false)
     private User user;
 

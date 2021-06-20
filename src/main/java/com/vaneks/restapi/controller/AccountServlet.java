@@ -1,13 +1,10 @@
 package com.vaneks.restapi.controller;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.vaneks.restapi.dao.AccountDaoImpl;
 import com.vaneks.restapi.model.Account;
 import com.vaneks.restapi.model.AccountStatus;
-import com.vaneks.restapi.model.User;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -75,20 +72,7 @@ public class AccountServlet extends HttpServlet {
     }
 
     private void sendJson(HttpServletResponse response, Object obj) throws IOException {
-        ExclusionStrategy strategy = new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipField(FieldAttributes field) {
-                return (field.getDeclaringClass() == Account.class && field.getName().equals("user"))||
-                        (field.getDeclaringClass() == User.class && field.getName().equals("account"));
-            }
-
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-        };
-
-        Gson gson = new GsonBuilder().addSerializationExclusionStrategy(strategy).create();
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         String json = gson.toJson(obj);
         response.getWriter().write(json);
     }
